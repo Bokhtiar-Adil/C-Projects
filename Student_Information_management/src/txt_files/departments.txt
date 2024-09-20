@@ -1,0 +1,4 @@
+1,CSE
+2,ECE
+3,ETE
+4,IEM
