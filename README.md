@@ -1,6 +1,6 @@
 # C-Projects
 
-These console projects are built while going through a rigorous training session in C. These prjects implements several data structures using C and follows industry-standard practices in C-development. These projects are made as much clean, readable, portable, modular, fail-proof, and uncrashable as possible. The input taking mechanism is carefully designed to handle any unusual and illegal input to prevent crashing. Also, the files are checked for possible corruption before reading any data from it.
+These console projects are built while going through a rigorous training session in C. These projects implement several data structures using C and follows industry-standard practices in C-development. These projects are made as much clean, readable, portable, modular, fail-proof, and uncrashable as possible. The input taking mechanism is carefully designed to handle any unusual and illegal input to prevent crashing. Also, the files are checked for possible corruption before reading any data from it.
 
 ## Student Information Management
 
