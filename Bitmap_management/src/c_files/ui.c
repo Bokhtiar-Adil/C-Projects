@@ -3,24 +3,30 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "utils.h"
-#include "bit_management.h"
-#include "ui.h"
+#include "../h_files/utils.h"
+#include "../h_files/bit_management.h"
+#include "../h_files/ui.h"
+
+void print_middle_aligned(const char *text, i32 given_width);
+void get_integer_from_user_until_valid_value_is_given(i32 *value, i32 min_value, i32 max_value);
+void main_menu();
+void create_bitmap();
+void print_bitmap();
+void add_bit_in_bitmap();
+void delete_bit_in_bitmap();
+void and_bitmaps();
+void or_bitmaps();
+void not_bitmap();
+void clone_bitmap();
+void parse_string();
+void destroy_bitmap();
+void exit_process(bool *is_exit);
 
 static i32 ui_iter = 0;
 const char *ui_menu_message = "";
 struct bitmap *ui_bitmap_1 = NULL;
 struct bitmap *ui_bitmap_2 = NULL;
 fptr_print_function bitmap_printer = NULL;
-
-void clear_menu()
-{
-#ifdef _WIN32
-    system("cls");
-#else
-    system("clear");
-#endif
-}
 
 /*
  *  Takes a string 'text' and prints in the middle of the given width in console
@@ -40,24 +46,9 @@ void print_middle_aligned(const char *text, i32 given_width)
     return;
 }
 
-void print_header()
-{
-    clear_menu();
-
-    for (ui_iter = 0; ui_iter <= MAX_MENU_WIDTH; ui_iter++)
-        printf("*");
-
-    printf("\n");
-    print_middle_aligned(APP_NAME, MAX_MENU_WIDTH);
-    printf("\n");
-
-    for (ui_iter = 0; ui_iter <= MAX_MENU_WIDTH; ui_iter++)
-        printf("*");
-
-    printf("\n");
-
-    return;
-}
+/*
+ *  this function keeps taking user input until a valid value within a given range is inserted
+ */
 
 void get_integer_from_user_until_valid_value_is_given(i32 *value, i32 min_value, i32 max_value)
 {
@@ -77,22 +68,6 @@ void get_integer_from_user_until_valid_value_is_given(i32 *value, i32 min_value,
     return;
 }
 
-void ui_message_and_user_input_area()
-{
-    for (ui_iter = 0; ui_iter <= MAX_MENU_WIDTH; ui_iter++)
-        printf("*");
-
-    printf("\n");
-
-    if (strlen(ui_menu_message) != 0)
-        printf("%s\n", ui_menu_message);
-
-    printf("Insert your command here: ");
-    printf("\n");
-
-    return;
-}
-
 i32 get_which_bitmap()
 {
     i32 which = 0;
@@ -108,7 +83,23 @@ i32 get_which_bitmap()
 
 void main_menu()
 {
-    print_header();
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+
+    for (ui_iter = 0; ui_iter <= MAX_MENU_WIDTH; ui_iter++)
+        printf("*");
+
+    printf("\n");
+    print_middle_aligned(APP_NAME, MAX_MENU_WIDTH);
+    printf("\n");
+
+    for (ui_iter = 0; ui_iter <= MAX_MENU_WIDTH; ui_iter++)
+        printf("*");
+
+    printf("\n");
     print_middle_aligned("Main Menu", MAX_MENU_WIDTH);
     printf("\n");
     printf("\n");
@@ -121,10 +112,19 @@ void main_menu()
     printf("7. NOT operation\n");
     printf("8. Parse a string\n");
     printf("9. Clone a bitmap\n");
-    printf("10. Parse a string\n");
+    printf("10. Destroy a bitmap\n");
     printf("11. Exit\n");
 
-    ui_message_and_user_input_area();
+    for (ui_iter = 0; ui_iter <= MAX_MENU_WIDTH; ui_iter++)
+        printf("*");
+
+    printf("\n");
+
+    if (strlen(ui_menu_message) != 0)
+        printf("%s\n", ui_menu_message);
+
+    printf("Insert your command here: ");
+    printf("\n");
 
     return;
 }
@@ -137,7 +137,7 @@ void create_bitmap()
     printf("** CREATE BITMAP **\n");
     printf("Insert capacity (Range: 1 to 65535) >> ");
     get_integer_from_user_until_valid_value_is_given(&capacity, 1, 65535);
-    new = bitMap_create((u16)capacity);
+    new = bitmap_create((u16)capacity);
 
     if (new == NULL)
     {
@@ -145,6 +145,12 @@ void create_bitmap()
 
         return;
     }
+
+    /*
+     *  if bitmap_1 is null it stores there
+     *  else it stores in bitmap_2
+     *  if neither are null, overwrites bitmap_1
+     */
 
     if (ui_bitmap_1 == NULL)
         ui_bitmap_1 = new;
@@ -279,6 +285,7 @@ void and_bitmaps()
     else
         ;
 
+    printf("** AND BITMAP **\n");
     printf("Old bitmaps:\n");
     printf("Bitmap-1:\n");
     bitmap_printer(ui_bitmap_1);
@@ -320,6 +327,7 @@ void or_bitmaps()
     else
         ;
 
+    printf("** OR BITMAP **\n");
     printf("Old bitmaps:\n");
     printf("Bitmap-1:\n");
     bitmap_printer(ui_bitmap_1);
@@ -384,7 +392,7 @@ void not_bitmap()
 void clone_bitmap()
 {
     struct bitmap *new = NULL;
-    
+
     new = bitmap_clone(ui_bitmap_2);
 
     if (new == NULL)
@@ -403,12 +411,17 @@ void parse_string()
     char tmp = 0;
     char str[MAX_PARSE_STRING_LENGTH] = {0};
     i32 len = 0;
+    i32 value = 0;
+    i32 from_index = 0;
+    i32 to_index = 0;
+    i32 index_so_far = 0;
     bool get_number = false;
-    bool get_hiphen = false;
-    bool get_comma = false;
-    bool is_valid = true;
+    bool found_hipen = false;
+    bool is_invalid = false;
+    struct bitmap *new = NULL;
 
     ui_iter = 0;
+    printf("** PARSE A STRING **\n");
     printf("Insert a string within %d characters >> ", MAX_PARSE_STRING_LENGTH);
 
     /*
@@ -431,11 +444,163 @@ void parse_string()
     len = strlen(str);
     ui_iter = 0;
     get_number = true;
+    from_index = INVALID_VALUE_INDICATOR;
+    to_index = INVALID_VALUE_INDICATOR;
+    value = INVALID_VALUE_INDICATOR;
+    index_so_far = INVALID_VALUE_INDICATOR;
+    found_hipen = false;
 
-    while (ui_iter < len)
+    while (ui_iter < len + 1)
     {
+        /*
+         *  if any invalid character is found, loop ends
+         */
 
+        if ((str[ui_iter] < '0' || str[ui_iter] > '9') && str[ui_iter] != '-' && str[ui_iter] != ',' && str[ui_iter] != '\0')
+        {
+            is_invalid = true;
+            break;
+        }
+
+        if (str[ui_iter] == '-')
+        {
+            /*
+             *  if the current character is a hiphen, then -
+             *  first it checks whether it is a duplicate one or not
+             *  if it is not duplicate, sets the flag found_hipen to true
+             */
+
+            if (found_hipen == true)
+            {
+                is_invalid = true;
+                break;
+            }
+
+            found_hipen = true;
+
+            /*
+             *  it checks if the extracted value is within limits and does not overlap previous values
+             *  overlapping means - if str is like this -> "1,3-7,4-9" -> then it is invalid
+             *  value < MIN_INDEX_OF_PARSE_STRING will be true if value == INVALID_VALUE_INDICATOR
+             *  this essentially means that no new number was found between previous hipen/comma and this one
+             *  example cases --> "-", ",-", "1,-", "1,3--", etc
+             */
+
+            if (value <= index_so_far || value < MIN_INDEX_OF_PARSE_STRING || value > MAX_INDEX_OF_PARSE_STRING)
+            {
+                is_invalid = true;
+                break;
+            }
+
+            if (from_index == INVALID_VALUE_INDICATOR)
+                from_index = value;
+
+            value = INVALID_VALUE_INDICATOR;
+        }
+        else if (str[ui_iter] == ',' || str[ui_iter] == '\0')
+        {
+            /*
+             *  if the current character is a comma, then -
+             *  first it sets the falg found_hipen to false because now the next set of numbers is reached
+             */
+
+            found_hipen = false;
+
+            /*
+             *  it checks if the extracted value is within limits and does not overlap previous values
+             *  overlapping means - if str is like this -> "1,3-7,4-9" -> then it is invalid
+             *  value < MIN_INDEX_OF_PARSE_STRING will be true if value == INVALID_VALUE_INDICATOR
+             *  this essentially means that no new number was found between previous hipen/comma and this one
+             *  example cases --> ",", "-,", "1-,", "1,3,,", etc
+             */
+
+            if (value <= index_so_far || value < MIN_INDEX_OF_PARSE_STRING || value > MAX_INDEX_OF_PARSE_STRING)
+            {
+                is_invalid = true;
+                break;
+            }
+
+            if (from_index == INVALID_VALUE_INDICATOR)
+                from_index = value;
+
+            to_index = value;
+
+            /*
+             *  this is invalid --> "1,5-2"
+             */
+
+            if (to_index < from_index)
+            {
+                is_invalid = true;
+                break;
+            }
+
+            /*
+             *  index_so_far store the maximum index value reached so far to check overlap
+             *  checking is done and so, resetting value, from_index, and to_index
+             */
+
+            index_so_far = to_index;
+            value = INVALID_VALUE_INDICATOR;
+            from_index = INVALID_VALUE_INDICATOR;
+            to_index = INVALID_VALUE_INDICATOR;
+        }
+        else
+        {
+            /*
+             *  if value == -1, it becomes 0
+             */
+
+            value = FIND_MAX(value, 0);
+            value = value * 10 + (str[ui_iter] - '0');
+        }
+
+        ui_iter++;
     }
+
+    if (is_invalid)
+        ui_menu_message = INVALID_INPUT_MESSAGE;
+    else
+    {
+        new = bitmap_parse_str(str);
+
+        if (new == NULL)
+            ui_menu_message = utils_check_message;
+        else
+        {
+            /*
+             *  always stores in ui_bitmap_1
+             */
+
+            free(ui_bitmap_1);
+            ui_bitmap_1 = NULL;
+            ui_bitmap_1 = new;
+            ui_menu_message = OPERATION_SUCCESSFUL_MESSAGE;
+        }
+    }
+
+    return;
+}
+
+void destroy_bitmap()
+{
+    i32 which = 0;
+
+    printf("** DESTROY A BITMAP **\n");
+    which = get_which_bitmap();
+
+    if (which == 1)
+    {
+        bitmap_destroy(ui_bitmap_1);
+        ui_bitmap_1 = NULL;
+    }
+    else if (which == 2)
+    {
+        bitmap_destroy(ui_bitmap_2);
+        ui_bitmap_2 = NULL;
+    }
+    else
+        ;
 
     return;
 }
@@ -444,6 +609,7 @@ void exit_process(bool *is_exit)
 {
     i32 user_choice = 0;
 
+    printf("** EXIT **\n");
     printf("Are you sure to exit?\n");
     printf("1. Yes\n");
     printf("2. No\n");

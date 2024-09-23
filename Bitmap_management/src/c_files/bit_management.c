@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "utils.h"
-#include "bit_management.h"
+#include "../h_files/utils.h"
+#include "../h_files/bit_management.h"
 
-struct bitmap *bitMap_create(u16 capacity);
+struct bitmap *bitmap_create(u16 capacity);
 void bitmap_destroy(struct bitmap *bm);
 static bool bitmap_check(struct bitmap *bm);
 bool bitmap_add_value(struct bitmap *bm, u16 value);
@@ -17,12 +17,12 @@ bool bitmap_not(struct bitmap *bm);
 bool bitmap_or(struct bitmap *bm_store, struct bitmap *bm);
 bool bitmap_and(struct bitmap *bm_store, struct bitmap *bm);
 struct bitmap *bitmap_parse_str(u8 *str);
-void bitmap_update_first_and_last_value_and_numbers(struct bitmap *bm);
-void bitmap_print_bitmap_bits(struct bitmap *bm);
+static void bitmap_update_first_and_last_value_and_numbers(struct bitmap *bm);
+void bitmap_print_details(struct bitmap *bm);
 
 static i32 bit_management_iter = 0;
 
-struct bitmap *bitMap_create(u16 capacity)
+struct bitmap *bitmap_create(u16 capacity)
 {
     struct bitmap *new = NULL;
     u32 extra_bits = 0;
@@ -50,6 +50,9 @@ struct bitmap *bitMap_create(u16 capacity)
 
 void bitmap_destroy(struct bitmap *bm)
 {
+    if (bm == NULL)
+        return;
+
     bm->bm_self = NULL;
     free(bm);
     bm = NULL;
@@ -90,10 +93,16 @@ void bitmap_print(struct bitmap *bm)
 
     printf("buf : ");
 
-    from_index = -1;
-    to_index = -1;
+    from_index = INVALID_VALUE_INDICATOR;
+    to_index = INVALID_VALUE_INDICATOR;
     index = 1;
     one_found_so_far = 0;
+
+    /*
+     *  in the bitmap 1st bit is the rightmost bit so buf contains every bit from right to left
+     *  so, the iteration starts from right
+     *  example --> if bit field is "1-33", buf[0] = 0x1, buf[1] = 0xffffffff
+     */
 
     for (bit_management_iter = bm->buf_len - 1; bit_management_iter >= 0; bit_management_iter--)
     {
@@ -106,7 +115,7 @@ void bitmap_print(struct bitmap *bm)
 
             if (tmp != 0)
             {
-                if (from_index == -1)
+                if (from_index == INVALID_VALUE_INDICATOR)
                     from_index = index;
 
                 to_index = index;
@@ -114,7 +123,7 @@ void bitmap_print(struct bitmap *bm)
             }
             else
             {
-                if (from_index != -1)
+                if (from_index != INVALID_VALUE_INDICATOR)
                 {
                     if (from_index == to_index)
                         printf("%d", from_index);
@@ -125,8 +134,8 @@ void bitmap_print(struct bitmap *bm)
                         printf(",");
                 }
 
-                from_index = -1;
-                to_index = -1;
+                from_index = INVALID_VALUE_INDICATOR;
+                to_index = INVALID_VALUE_INDICATOR;
             }
 
             mask <<= 1;
@@ -175,10 +184,16 @@ void bitmap_print_details(struct bitmap *bm)
     printf("\n");
     printf("buf         : ");
 
-    from_index = -1;
-    to_index = -1;
+    from_index = INVALID_VALUE_INDICATOR;
+    to_index = INVALID_VALUE_INDICATOR;
     index = 1;
     one_found_so_far = 0;
+
+    /*
+     *  in the bitmap 1st bit is the rightmost bit so buf contains every bit from right to left
+     *  so, the iteration starts from right
+     *  example --> if bit field is "1-33", buf[0] = 0x1, buf[1] = 0xffffffff
+     */
 
     for (bit_management_iter = bm->buf_len - 1; bit_management_iter >= 0; bit_management_iter--)
     {
@@ -191,7 +206,7 @@ void bitmap_print_details(struct bitmap *bm)
 
             if (tmp != 0)
             {
-                if (from_index == -1)
+                if (from_index == INVALID_VALUE_INDICATOR)
                     from_index = index;
 
                 to_index = index;
@@ -199,7 +214,7 @@ void bitmap_print_details(struct bitmap *bm)
             }
             else
             {
-                if (from_index != -1)
+                if (from_index != INVALID_VALUE_INDICATOR)
                 {
                     if (from_index == to_index)
                         printf("%d", from_index);
@@ -210,8 +225,8 @@ void bitmap_print_details(struct bitmap *bm)
                         printf(",");
                 }
 
-                from_index = -1;
-                to_index = -1;
+                from_index = INVALID_VALUE_INDICATOR;
+                to_index = INVALID_VALUE_INDICATOR;
             }
 
             mask <<= 1;
@@ -303,7 +318,7 @@ bool bitmap_del_value(struct bitmap *bm, u16 value)
     /*
      *  there were no 1 before first_value and after last_value in the bitmap
      *  so, deleting 1 means doing operation within this boundary [first_value, last_value]
-     *  but, the index of the deleted 1 is not equal to first_value or last_value, their values remain unchanged
+     *  if the index of the deleted 1 is not equal to first_value or last_value, their values remain unchanged
      *  if the value equals to either first_value or last_value, their values need to be changed
      */
 
@@ -322,7 +337,7 @@ struct bitmap *bitmap_clone(struct bitmap *bm)
     if (bitmap_check(bm) == false)
         return NULL;
 
-    new = bitMap_create(bm->max_value);
+    new = bitmap_create(bm->max_value);
 
     if (new == NULL)
         return NULL;
@@ -455,8 +470,8 @@ struct bitmap *bitmap_parse_str(u8 *str)
     struct bitmap *new = NULL;
 
     len = strlen(str);
-    from_value = -1;
-    to_value = -1;
+    from_value = INVALID_VALUE_INDICATOR;
+    to_value = INVALID_VALUE_INDICATOR;
     bit_management_iter = len - 1;
     factor = 1;
 
@@ -470,10 +485,13 @@ struct bitmap *bitmap_parse_str(u8 *str)
         factor *= 10;
     }
 
-    new = bitMap_create((u16)value);
+    new = bitmap_create((u16)value);
 
-    from_index = -1;
-    to_index = -1;
+    if (new == NULL)
+        return NULL;
+
+    from_index = INVALID_VALUE_INDICATOR;
+    to_index = INVALID_VALUE_INDICATOR;
     index = 1;
     bit_management_iter = 0;
 
@@ -487,7 +505,7 @@ struct bitmap *bitmap_parse_str(u8 *str)
             bit_management_iter++;
         }
 
-        if (from_index == -1)
+        if (from_index == INVALID_VALUE_INDICATOR)
             from_index = value;
 
         to_index = value;
@@ -495,10 +513,13 @@ struct bitmap *bitmap_parse_str(u8 *str)
         if (str[bit_management_iter] != '-')
         {
             for (index = from_index; index <= to_index; index++)
-                bitmap_add_value(new, (u16)index);
+            {
+                if (!bitmap_add_value(new, (u16)index))
+                    return NULL;
+            }
 
-            from_index = -1;
-            to_index = -1;
+            from_index = INVALID_VALUE_INDICATOR;
+            to_index = INVALID_VALUE_INDICATOR;
         }
 
         bit_management_iter++;
@@ -514,6 +535,11 @@ void bitmap_update_first_and_last_value_and_numbers(struct bitmap *bm)
     u32 index = 0;
 
     bm->numbers = 0;
+
+    /*
+     *  in the bitmap 1st bit is the rightmost bit so buf contains every bit from right to left
+     *  example --> if bit field is "1-33", buf[0] = 0x1, buf[1] = 0xffffffff
+     */
 
     for (bit_management_iter = bm->buf_len - 1; bit_management_iter >= 0; bit_management_iter--)
     {
@@ -543,44 +569,3 @@ void bitmap_update_first_and_last_value_and_numbers(struct bitmap *bm)
 
     return;
 }
-
-// for (bit_management_iter = bm->buf_len - 1; bit_management_iter >= 0; bit_management_iter--)
-// {
-//     curr = bm->buf[bit_management_iter];
-//     iter2 = 0;
-//     mask = 1;
-
-//     while (iter2 < MAX_NUMBER_OF_BITS_IN_BUF_ELEMENTS)
-//     {
-//         if (curr & mask != 0)
-//         {
-//             if (from_index < 0)
-//                 from_index = index;
-
-//             to_index = index;
-//         }
-//         else
-//         {
-//             if (from_index < 0)
-//                 continue;
-
-//             printf("%d", from_index);
-
-//             if (from_index != to_index)
-//                 printf("-%d", to_index);
-
-//             if (index == bm->max_value)
-//                 printf("\n");
-//             else
-//                 printf(",");
-
-//             from_index = -1;
-//             to_index = -1;
-//         }
-
-//         index++;
-//         mask <<= 1;
-//         iter2++;
-//         printf("%d\n", iter2);
-//     }
-// }

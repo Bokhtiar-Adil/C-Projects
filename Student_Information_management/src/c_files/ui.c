@@ -166,8 +166,6 @@ void ui_message_and_user_input_area()
 
 void ui_main_menu()
 {
-    int32_t app_name_length = strlen(app_name);
-
     print_header();
     print_middle_aligned("Main Menu", MAX_MENU_WIDTH);
     printf("\n");

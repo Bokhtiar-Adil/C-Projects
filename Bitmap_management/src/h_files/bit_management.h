@@ -23,7 +23,7 @@ struct bitmap
  *               Failed      NULL
  *   Description            Create a bitmap
  ******************************************************************************/
-struct bitmap *bitMap_create(u16 capacity);
+struct bitmap *bitmap_create(u16 capacity);
 
 /*****************************************************************************
  *
@@ -123,7 +123,16 @@ bool bitmap_and(struct bitmap *bm_store, struct bitmap *bm);
  *   Description            Parse a string to bitmap
  ******************************************************************************/
 struct bitmap *bitmap_parse_str(u8 *str);
-struct bitmap *bitmap_parse_str_wrong(u8 *str);
+
+/*****************************************************************************
+ *
+ *   Name:       bitmap_print_details
+ *
+ *   Input:      bm          A bitmap that will be printed
+ *   Return:     Success     None
+ *               Failed      None
+ *   Description            Print all the elements in the bitmap struct i.e. numbers, first_value, last_value, etc
+ ******************************************************************************/
 void bitmap_print_details (struct bitmap *bm);
 
 #endif /* __BIT_MANAGEMENT_H__ */

@@ -3,61 +3,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "utils.h"
+#include "../h_files/utils.h"
 
 static i32 utils_iter = 0;
 const char *utils_check_message = "";
-
-u32 power_of_two(u32 value)
-{
-    u32 res = 1;
-
-    while (value > 0)
-    {
-        res *= 2;
-        value--;
-    }
-
-    return res;
-}
-
-void check_string(char *str)
-{
-    i32 len = 0;
-    i32 number_of_ones = 0;
-    i32 first_one_index = 0;
-    i32 last_one_index = 0;
-    bool is_one_found = false;
-
-    len = strlen(str);
-    utils_iter = 0;
-
-    while (utils_iter < len)
-    {
-        if (str[utils_iter] == '1')
-        {
-            number_of_ones++;
-
-            if (!is_one_found)
-                last_one_index = len - 1 - utils_iter;
-
-            first_one_index = len - 1 - utils_iter;
-            is_one_found = true;
-        }
-
-        utils_iter++;
-    }
-
-    printf("** %s **\n", __FUNCTION__);
-    printf("given_string        : %s\n", str);
-    printf("length              : %d\n", len);
-    printf("number_of_ones      : %d\n", number_of_ones);
-    printf("first_one_index     : %d\n", first_one_index);
-    printf("last_one_index      : %d\n", last_one_index);
-    printf("\n");
-
-    return;
-}
 
 i32 get_integer_from_user_input()
 {
