@@ -471,8 +471,8 @@ void print_list()
     while (curr != NULL)
     {
         printf("|%10u |", index);
-        printf("   %3hhu.%3hhu.%3hhu.%3hhu  |", curr->src_ip[0], curr->src_ip[1], curr->src_ip[2], curr->src_ip[3]);
-        printf("   %3hhu.%3hhu.%3hhu.%3hhu  |", curr->dest_ip[0], curr->dest_ip[1], curr->dest_ip[2], curr->dest_ip[3]);
+        printf("    %3hhu.%3hhu.%3hhu.%3hhu |", curr->src_ip[0], curr->src_ip[1], curr->src_ip[2], curr->src_ip[3]);
+        printf("    %3hhu.%3hhu.%3hhu.%3hhu |", curr->dest_ip[0], curr->dest_ip[1], curr->dest_ip[2], curr->dest_ip[3]);
         printf("%10u |\n", curr->counter);
         cnt += curr->counter;
         curr = curr->next;
@@ -484,7 +484,7 @@ void print_list()
         printf("\n");
     }
 
-    printf("|%*s|%10u |\n", LIST_TABLE_WIDTH - 14, "Total ", cnt);
+    printf("|%*s|%10u |\n", LIST_TABLE_WIDTH - LIST_TOTAL_ROW_PRINT_OFFSET, "Total ", cnt);
 
     for (iter = 0; iter < LIST_TABLE_WIDTH; iter++)
         printf("-");
@@ -522,7 +522,7 @@ void print_hash_table()
         keep_spaces_in_left = false;
 
         if (hash_table[iter1] == NULL)
-            printf("%*s\n", HASH_TABLE_WIDTH - 17, "|");
+            printf("%*s\n", HASH_TABLE_WIDTH - HASH_TABLE_EMPTY_ROW_PRINT_OFFSET, "|");
 
         while (curr != NULL)
         {
@@ -530,8 +530,8 @@ void print_hash_table()
                 printf("|%14s |", "");
 
             printf("%14u |", curr->key);
-            printf("   %3hhu.%3hhu.%3hhu.%3hhu  |", curr->data->src_ip[0], curr->data->src_ip[1], curr->data->src_ip[2], curr->data->src_ip[3]);
-            printf("   %3hhu.%3hhu.%3hhu.%3hhu  |", curr->data->dest_ip[0], curr->data->dest_ip[1], curr->data->dest_ip[2], curr->data->dest_ip[3]);
+            printf("    %3hhu.%3hhu.%3hhu.%3hhu |", curr->data->src_ip[0], curr->data->src_ip[1], curr->data->src_ip[2], curr->data->src_ip[3]);
+            printf("    %3hhu.%3hhu.%3hhu.%3hhu |", curr->data->dest_ip[0], curr->data->dest_ip[1], curr->data->dest_ip[2], curr->data->dest_ip[3]);
             printf("%10u |\n", curr->data->counter);
             curr = curr->next;
             keep_spaces_in_left = true;
@@ -542,7 +542,7 @@ void print_hash_table()
             if (keep_spaces_in_left)
                 printf("|%14s ", "");
 
-            for (iter2 = 17; iter2 < HASH_TABLE_WIDTH; iter2++)
+            for (iter2 = HASH_TABLE_EMPTY_ROW_PRINT_OFFSET; iter2 < HASH_TABLE_WIDTH; iter2++)
                 printf("-");
 
             printf("\n");

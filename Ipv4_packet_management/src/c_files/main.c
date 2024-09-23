@@ -9,6 +9,11 @@ int main(void)
 {
     u32 is_success = 0;
 
+    printf("**********************************\n");
+    printf("***** IPV4 Packet Management *****\n");
+    printf("**********************************\n");
+    printf("\n");
+    
     is_success = load_frames_from_file_and_prepare_hash_table();
 
     if (is_success == DATA_NOT_LOADED_ERROR_CODE)

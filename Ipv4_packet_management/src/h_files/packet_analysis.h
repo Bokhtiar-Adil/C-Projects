@@ -3,12 +3,6 @@
 
 #include "utils.h"
 
-#if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__) || defined(_BIG_ENDIAN)
-#define IS_BIG_ENDIAN 1
-#else
-#define IS_LITTLE_ENDIAN 1
-#endif
-
 #define MAXIMUM_TRANSMISSION_UNIT 1500
 #define MAXIMUM_FRAME_BYTE_LENGTH 1518
 #define ETHERNET_HEADER_BYTES_LENGTH 14
@@ -28,6 +22,8 @@
 #define DATA_NOT_LOADED_ERROR_CODE 1
 #define LIST_OR_HASH_TABLE_NOT_CONSTRUCTED_ERROR_CODE 2
 #define NO_ERROR_CODE 0
+#define LIST_TOTAL_ROW_PRINT_OFFSET 14
+#define HASH_TABLE_EMPTY_ROW_PRINT_OFFSET 17
 
 #pragma pack(1)
 typedef struct list_node
