@@ -12,7 +12,7 @@ This project has three tables in its database - department table, student table,
 
 ![Screenshot 2024-09-23 084248](https://github.com/user-attachments/assets/1e72cac5-8f19-4425-8943-ee4580623203)
 
-![Screenshot 2024-09-23 084316](https://github.com/user-attachments/assets/2ae19b98-f3f9-416b-a3cb-cb10f4936bd8)
+![Screenshot 2024-09-23 084316](https://github.com/user-attachments/assets/39c72c88-970e-4319-80a0-d950189b7f4c)
 
 ![Screenshot 2024-09-23 084227](https://github.com/user-attachments/assets/6d7dcda8-d153-4ee1-9f2e-15011821401f)
 
