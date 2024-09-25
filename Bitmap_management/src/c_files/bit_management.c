@@ -6,7 +6,7 @@
 #include "../h_files/utils.h"
 #include "../h_files/bit_management.h"
 
-struct bitmap *bitmap_create(u16 capacity);
+struct bitmap *bitMap_create(u16 capacity);
 void bitmap_destroy(struct bitmap *bm);
 static bool bitmap_check(struct bitmap *bm);
 bool bitmap_add_value(struct bitmap *bm, u16 value);
@@ -17,12 +17,12 @@ bool bitmap_not(struct bitmap *bm);
 bool bitmap_or(struct bitmap *bm_store, struct bitmap *bm);
 bool bitmap_and(struct bitmap *bm_store, struct bitmap *bm);
 struct bitmap *bitmap_parse_str(u8 *str);
-static void bitmap_update_first_and_last_value_and_numbers(struct bitmap *bm);
+void bitmap_update_first_and_last_value_and_numbers(struct bitmap *bm);
 void bitmap_print_details(struct bitmap *bm);
 
 static i32 bit_management_iter = 0;
 
-struct bitmap *bitmap_create(u16 capacity)
+struct bitmap *bitMap_create(u16 capacity)
 {
     struct bitmap *new = NULL;
     u32 extra_bits = 0;
@@ -337,7 +337,7 @@ struct bitmap *bitmap_clone(struct bitmap *bm)
     if (bitmap_check(bm) == false)
         return NULL;
 
-    new = bitmap_create(bm->max_value);
+    new = bitMap_create(bm->max_value);
 
     if (new == NULL)
         return NULL;
@@ -485,7 +485,7 @@ struct bitmap *bitmap_parse_str(u8 *str)
         factor *= 10;
     }
 
-    new = bitmap_create((u16)value);
+    new = bitMap_create((u16)value);
 
     if (new == NULL)
         return NULL;

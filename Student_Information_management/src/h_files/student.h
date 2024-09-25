@@ -4,6 +4,8 @@
 extern student_node_t *s_head;
 extern student_node_t *s_tail;
 extern int32_t total_students;
+extern student_node_t **stud_hash_table;
+extern uint32_t stud_and_grade_hash_table_size;
 
 student_t *create_student(string_t id, string_t name, string_t gender, int32_t department_id);
 student_node_t *create_student_node(student_t *student);

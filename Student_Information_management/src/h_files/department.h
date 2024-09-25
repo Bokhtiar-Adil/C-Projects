@@ -4,6 +4,8 @@
 extern department_node_t *d_head;
 extern department_node_t *d_tail;
 extern int32_t maximum_dept_id;
+extern department_node_t **dept_hash_table;
+extern uint32_t dept_hash_table_size;
 
 department_t *create_department(int32_t id, string_t name, bool_t is_from_file);
 department_node_t *create_department_node(department_t *department);

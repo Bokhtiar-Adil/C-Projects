@@ -137,7 +137,7 @@ void create_bitmap()
     printf("** CREATE BITMAP **\n");
     printf("Insert capacity (Range: 1 to 65535) >> ");
     get_integer_from_user_until_valid_value_is_given(&capacity, 1, 65535);
-    new = bitmap_create((u16)capacity);
+    new = bitMap_create((u16)capacity);
 
     if (new == NULL)
     {

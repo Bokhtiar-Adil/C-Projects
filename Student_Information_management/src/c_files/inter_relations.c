@@ -20,12 +20,6 @@ void load_student_list_from_file();
 void load_grade_list_from_file();
 
 /*
- *  This variable will be frequently used to iterate loops in various functions
- */
-
-static int32_t iter = 0;
-
-/*
  *  This function checks the validity of student id, department id, and grade id
  *  enitity = 's' means student, entity = 'd' means deparment, and entity = 'g' means grade
  *  test_type = true means checking whether the given id exists in the linked list or not
@@ -53,8 +47,6 @@ bool_t check_id(void *id, char entity, bool_t test_type)
     else
         return check_is_grade_already_exist((string_t)id);
 
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
-
     return false;
 }
 
@@ -63,7 +55,6 @@ bool_t delete_department_from_the_list(int32_t id)
     department_node_t *d_curr = NULL;
     student_node_t *s_curr = NULL;
 
-    d_curr = d_head;
     s_curr = s_head;
 
     /*
@@ -78,13 +69,7 @@ bool_t delete_department_from_the_list(int32_t id)
         s_curr = s_curr->next;
     }
 
-    while (d_curr != NULL)
-    {
-        if (d_curr->department->id == id)
-            break;
-
-        d_curr = d_curr->next;
-    }
+    d_curr = dept_hash_table[id];
 
     if (d_curr->prev != NULL)
         d_curr->prev->next = d_curr->next;
@@ -98,16 +83,13 @@ bool_t delete_department_from_the_list(int32_t id)
     if (d_curr == d_head)
         d_head = (d_curr->next != NULL) ? d_curr->next : NULL;
 
+    dept_hash_table[id] = NULL;
     free(d_curr->department->name);
     d_curr->department->name = NULL;
     free(d_curr->department);
     d_curr->department = NULL;
     d_curr->next = NULL;
     d_curr->prev = NULL;
-    free(d_curr);
-    d_curr = NULL;
-
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
 
     return true;
 }
@@ -116,17 +98,8 @@ bool_t delete_student_from_the_list(string_t id)
 {
     student_node_t *s_curr = NULL;
 
-    s_curr = s_head;
-
+    s_curr = stud_hash_table[get_student_id_in_type_int(id)];
     delete_grade_from_the_list(s_curr->student->id);
-
-    while (s_curr != NULL)
-    {
-        if (!strncmp(s_curr->student->id, id, MAX_STUDENT_ID_LENGTH - 1))
-            break;
-
-        s_curr = s_curr->next;
-    }
 
     if (s_curr->prev != NULL)
         s_curr->prev->next = s_curr->next;
@@ -142,6 +115,7 @@ bool_t delete_student_from_the_list(string_t id)
 
     total_students--;
 
+    stud_hash_table[get_student_id_in_type_int(id)] = NULL;
     free(s_curr->student->id);
     s_curr->student->id = NULL;
     free(s_curr->student->name);
@@ -150,18 +124,12 @@ bool_t delete_student_from_the_list(string_t id)
     s_curr->student = NULL;
     s_curr->prev = NULL;
     s_curr->next = NULL;
-    free(s_curr);
-    s_curr = NULL;
-
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
 
     return true;
 }
 
 bool_t update_student_department_by_id(string_t id, int32_t new_dept)
 {
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "begin");
-
     student_node_t *curr = s_head;
 
     /*
@@ -180,8 +148,6 @@ bool_t update_student_department_by_id(string_t id, int32_t new_dept)
     }
 
     curr->student->department_id = new_dept;
-
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
 
     return true;
 }
@@ -203,7 +169,7 @@ bool_t update_grade_handler(string_t id, int32_t which_to_update, int32_t update
 
     if (g_curr == NULL)
     {
-        check_message = g_id_not_exist_msg;
+        check_message = G_ID_NOT_EXISTS_MSG;
 
         return false;
     }
@@ -220,12 +186,10 @@ bool_t update_grade_handler(string_t id, int32_t which_to_update, int32_t update
         g_curr->grade->history = updated_value;
         break;
     default:
-        check_message = invalid_input_msg;
+        check_message = INVALID_INPUT_MSG;
 
         return false;
     }
-
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
 
     return true;
 }
@@ -293,6 +257,10 @@ void free_all_data_pointers()
         g_prev = NULL;
     }
 
+    free(dept_hash_table);
+    free(stud_hash_table);
+    free(grade_hash_table);
+
     return;
 }
 
@@ -303,18 +271,20 @@ void load_department_list_from_file()
     int32_t tmp_id = 0;
     department_t *tmp_department = NULL;
     department_node_t *new_department_node = NULL;
+    department_node_t *curr = NULL;
     FILE *fp = NULL;
+    int32_t iter = 0;
     int32_t iter2 = 0;
     int32_t len = 0;
     bool_t id_done = false;
     bool_t name_done = false;
     bool_t is_invalid_character_found = false;
 
-    fp = fopen(departments_file_name, "r");
+    fp = fopen(DEPARTMENTS_FILE_NAME, "r");
 
     if (fp == NULL)
     {
-        print_message(__FILE__, __FUNCTION__, __LINE__, file_not_open_msg);
+        print_message(__FILE__, __FUNCTION__, __LINE__, FILE_NOT_OPEN_MSG);
 
         return;
     }
@@ -408,11 +378,19 @@ void load_department_list_from_file()
     }
 
     if (fclose(fp) != 0)
-        print_message(__FILE__, __FUNCTION__, __LINE__, file_not_close_msg);
+        print_message(__FILE__, __FUNCTION__, __LINE__, FILE_NOT_CLOSE_MSG);
 
     fp = NULL;
 
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
+    dept_hash_table_size = maximum_dept_id * 2;
+    dept_hash_table = (department_node_t **)get_memory(dept_hash_table_size * sizeof(department_node_t *));
+    curr = d_head;
+
+    while (curr != NULL)
+    {
+        dept_hash_table[curr->department->id] = curr;
+        curr = curr->next;
+    }
 
     return;
 }
@@ -426,7 +404,9 @@ void load_student_list_from_file()
     int32_t tmp_dept_id = 0;
     student_t *tmp_student = NULL;
     student_node_t *new_student_node = NULL;
+    student_node_t *s_curr = NULL;
     FILE *fp = NULL;
+    int32_t iter = 0;
     int32_t iter2 = 0;
     int32_t len = 0;
     bool_t id_done = false;
@@ -435,11 +415,11 @@ void load_student_list_from_file()
     bool_t dept_done = false;
     bool_t is_invalid_character_found = false;
 
-    fp = fopen(students_file_name, "r");
+    fp = fopen(STUDENTS_FILE_NAME, "r");
 
     if (fp == NULL)
     {
-        print_debug_message(__FILE__, __FUNCTION__, __LINE__, file_not_open_msg);
+        print_debug_message(__FILE__, __FUNCTION__, __LINE__, FILE_NOT_OPEN_MSG);
 
         return;
     }
@@ -576,11 +556,19 @@ void load_student_list_from_file()
     }
 
     if (fclose(fp) != 0)
-        print_debug_message(__FILE__, __FUNCTION__, __LINE__, file_not_close_msg);
+        print_debug_message(__FILE__, __FUNCTION__, __LINE__, FILE_NOT_CLOSE_MSG);
 
     fp = NULL;
 
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
+    stud_and_grade_hash_table_size = get_student_id_in_type_int(s_tail->student->id) * 2;
+    stud_hash_table = (student_node_t **)get_memory(stud_and_grade_hash_table_size * sizeof(student_node_t *));
+    s_curr = s_head;
+
+    while (s_curr != NULL)
+    {
+        stud_hash_table[get_student_id_in_type_int(s_curr->student->id)] = s_curr;
+        s_curr = s_curr->next;
+    }
 
     return;
 }
@@ -592,10 +580,12 @@ void load_grade_list_from_file()
     int32_t tmp_english = 0;
     int32_t tmp_math = 0;
     int32_t tmp_history = 0;
+    int32_t iter = 0;
     int32_t iter2 = 0;
     int32_t len = 0;
     grade_t *tmp_grade = NULL;
     grade_node_t *new_grade_node;
+    grade_node_t *g_curr = NULL;
     bool_t id_done = false;
     bool_t english_done = false;
     bool_t math_done = false;
@@ -603,16 +593,14 @@ void load_grade_list_from_file()
     bool_t is_invalid_character_found = false;
     FILE *fp = NULL;
 
-    fp = fopen(grades_file_name, "r");
+    fp = fopen(GRADES_FILE_NAME, "r");
 
     if (fp == NULL)
     {
-        print_debug_message(__FILE__, __FUNCTION__, __LINE__, file_not_open_msg);
+        print_debug_message(__FILE__, __FUNCTION__, __LINE__, FILE_NOT_OPEN_MSG);
 
         return;
     }
-
-    total_grades = 0;
 
     while (fgets(buffer, sizeof(buffer), fp) != NULL)
     {
@@ -701,15 +689,21 @@ void load_grade_list_from_file()
         tmp_grade = create_grade(tmp_id, tmp_english, tmp_math, tmp_history);
         new_grade_node = create_grade_node(tmp_grade);
         insert_grade_at_the_end(new_grade_node);
-        total_grades++;
     }
 
     if (fclose(fp) != 0)
-        print_debug_message(__FILE__, __FUNCTION__, __LINE__, file_not_close_msg);
+        print_debug_message(__FILE__, __FUNCTION__, __LINE__, FILE_NOT_CLOSE_MSG);
 
     fp = NULL;
 
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
+    grade_hash_table = (grade_node_t **)get_memory(stud_and_grade_hash_table_size * sizeof(grade_node_t *));
+    g_curr = g_head;
+
+    while (g_curr != NULL)
+    {
+        grade_hash_table[get_student_id_in_type_int(g_curr->grade->student_id)] = g_curr;
+        g_curr = g_curr->next;
+    }
 
     return;
 }

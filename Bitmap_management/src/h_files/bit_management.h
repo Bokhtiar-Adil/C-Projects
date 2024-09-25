@@ -23,7 +23,7 @@ struct bitmap
  *               Failed      NULL
  *   Description            Create a bitmap
  ******************************************************************************/
-struct bitmap *bitmap_create(u16 capacity);
+struct bitmap *bitMap_create(u16 capacity);
 
 /*****************************************************************************
  *

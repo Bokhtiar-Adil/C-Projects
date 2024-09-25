@@ -20,7 +20,44 @@
 #define USER_INPUT_OPTION_SIX 6
 #define USER_INPUT_OPTION_SEVEN 7
 #define USER_INPUT_OPTION_EIGHT 8
-
+#define DEBUG_FILE_NAME "../txt_files/debug_messages.txt"
+#define DEPARTMENTS_FILE_NAME "../txt_files/departments.txt"
+#define STUDENTS_FILE_NAME "../txt_files/students.txt"
+#define GRADES_FILE_NAME "../txt_files/grades.txt"
+#define DATABASE_TAMPERED_MSG "INFO: Some data was not loaded due to tampered database"
+#define NULL_CALLOC_MSG "INFO: calloc returns null pointer"
+#define CREATE_SUCCESS_MSG "INFO: List root created successfully"
+#define NULL_ROOT_MSG "INFO: null root"
+#define NULL_NODE_MSG "INFO: null node"
+#define INVALID_POSITION_MSG "INFO: Invalid position"
+#define INSERT_SUCCESS_MSG "INFO: INFO:Data inserted successfully"
+#define VALUE_NOT_FOUND_MSG "INFO: could not find the given value"
+#define ADD_SUCCESS_MSG "INFO: Data added successfully"
+#define DELETE_SUCCESS_MSG "INFO: Data deleted successfully"
+#define UPDATE_SUCCESS_MSG "INFO: Data updated successfully"
+#define DEBUG_FILE_NOT_OPEN_MSG "INFO: Debug file did not open"
+#define FILE_NOT_OPEN_MSG "INFO:  File did not open"
+#define DEBUG_FILE_NOT_CLOSE_MSG "INFO: Debug file did not close"
+#define FILE_NOT_CLOSE_MSG "INFO: File did not close"
+#define INVALID_INPUT_MSG "INFO: invalid input"
+#define VALID_INPUT_MSG "INFO: Valid input"
+#define D_INVALID_ID_MSG "INFO: Department id must be within 1 to 99"
+#define D_ID_EXISTS_MSG "INFO: Department id already exists"
+#define D_NAME_EXISTS_MSG "INFO: Department name already exists"
+#define D_ID_NOT_EXISTS_MSG "INFO: Department id does not exist"
+#define D_INVALID_NAME_LENGTH_MSG "INFO: Department name must be within 20 characters"
+#define D_INVALID_NAME_SYNTAX_MSG "INFO: Department name can only contain A-Z, a-z, space, and underscores"
+#define S_INVALID_ID_MSG "INFO: Student id must start with 'BDCOM' followed by three digits"
+#define S_ID_EXISTS_MSG "INFO: Student id already exists"
+#define S_ID_NOT_EXISTS_MSG "INFO: Student id does not exists"
+#define S_INVALID_NAME_LENGTH_MSG "INFO: Student name must be within 20 characters"
+#define S_INVALID_NAME_SYNTAX_MSG "INFO: Student name can only contain A-Z, a-z, space, and underscores"
+#define S_INVALID_GENDER_MSG "INFO: Gender must be either 'MALE' or 'FEMALE'"
+#define G_ID_EXISTS_MSG "INFO: Grade for this student id already exists"
+#define G_ID_NOT_EXISTS_MSG "INFO: Grade for this student id does not exist"
+#define G_ENGLISH_INVALID_MARKS_MSG "INFO: English grade must be within 0 to 100"
+#define G_MATH_INVALID_MARKS_MSG "INFO: Math grade must be within 0 to 100"
+#define G_HISTORY_INVALID_MARKS_MSG "INFO: History grade must be within 0 to 100"
 
 typedef char *string_t;
 
@@ -85,46 +122,9 @@ typedef struct grade_node
 extern FILE *debug_file;
 extern bool_t is_null_alloc_returned;
 extern bool_t is_database_tampered;
-extern const char *debug_file_name;
-extern const char *departments_file_name;
-extern const char *students_file_name;
-extern const char *grades_file_name;
+extern bool_t is_data_being_loaded_from_file;
 extern const char *check_message;
 extern const char *student_id_format;
-extern const char *database_tampered_msg;
-extern const char *null_calloc_msg;
-extern const char *create_succees_msg;
-extern const char *null_root_msg;
-extern const char *null_node_msg;
-extern const char *invalid_position_msg;
-extern const char *insert_success_msg;
-extern const char *value_not_found_msg;
-extern const char *add_success_msg;
-extern const char *delete_success_msg;
-extern const char *update_success_msg;
-extern const char *debug_file_not_open_msg;
-extern const char *file_not_open_msg;
-extern const char *debug_file_not_close_msg;
-extern const char *file_not_close_msg;
-extern const char *invalid_input_msg;
-extern const char *valid_input_msg;
-extern const char *d_invalid_id_msg;
-extern const char *d_id_exists_msg;
-extern const char *d_name_exists_msg;
-extern const char *d_id_not_exist_msg;
-extern const char *d_invalid_name_length_msg;
-extern const char *d_invalid_name_syntax_msg;
-extern const char *s_invalid_id_msg;
-extern const char *s_id_exists_msg;
-extern const char *s_id_not_exist_msg;
-extern const char *s_invalid_name_length_msg;
-extern const char *s_invalid_name_syntax_msg;
-extern const char *s_invalid_gender_msg;
-extern const char *g_id_exists_msg;
-extern const char *g_id_not_exist_msg;
-extern const char *g_english_invalid_marks_msg;
-extern const char *g_math_invalid_marks_msg;
-extern const char *g_history_invalid_marks_msg;
 
 void print_message(const char *file, const char *function, int32_t line, const char *message);
 void open_debug_file(string_t mode);

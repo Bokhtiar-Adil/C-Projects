@@ -3,10 +3,10 @@
 
 #include "common.h"
 
+#define APP_NAME "STUDENT INFORMATION MANAGEMENT"
+
 extern bool_t is_exit;
-extern const char *app_name;
 extern const char *menu_message;
-extern const char *add_success_msg;
 
 void load_all_data();
 void ui_main_menu();

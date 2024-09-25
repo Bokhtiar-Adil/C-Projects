@@ -3,7 +3,7 @@
 
 extern grade_node_t *g_head;
 extern grade_node_t *g_tail;
-extern int32_t total_grades;
+extern grade_node_t **grade_hash_table;
 
 grade_t *create_grade(string_t id, int32_t english, int32_t math, int32_t history);
 grade_node_t *create_grade_node(grade_t *grade);
