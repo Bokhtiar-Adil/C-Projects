@@ -19,8 +19,7 @@ bool_t update_student_gender_by_id(string_t id, int32_t updated_value);
 student_node_t *s_head = NULL;
 student_node_t *s_tail = NULL;
 int32_t total_students = 0;
-student_node_t **stud_hash_table = NULL;
-uint32_t stud_and_grade_hash_table_size = 0;
+static int32_t iter = 0;
 
 student_t *create_student(string_t id, string_t name, string_t gender, int32_t department_id)
 {
@@ -64,6 +63,8 @@ student_t *create_student(string_t id, string_t name, string_t gender, int32_t d
     new_stud->gender = (!strncmp(gender, "MALE", strlen("MALE")) ? MALE : FEMALE);
     new_stud->department_id = department_id;
 
+    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
+
     return new_stud;
 }
 
@@ -84,6 +85,8 @@ student_node_t *create_student_node(student_t *student)
     new->prev = NULL;
     new->next = NULL;
 
+    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
+
     return new;
 }
 
@@ -91,7 +94,7 @@ void insert_student_at_the_end(student_node_t *student)
 {
     if (student == NULL)
     {
-        print_debug_message(__FILE__, __FUNCTION__, __LINE__, NULL_NODE_MSG);
+        print_debug_message(__FILE__, __FUNCTION__, __LINE__, null_node_msg);
 
         return;
     }
@@ -110,6 +113,8 @@ void insert_student_at_the_end(student_node_t *student)
     }
     student->next = NULL;
 
+    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
+
     return;
 }
 
@@ -119,12 +124,12 @@ void write_students_in_file()
     student_node_t *curr = NULL;
     string_t int_to_str = NULL;
 
-    fp = fopen(STUDENTS_FILE_NAME, "w");
+    fp = fopen(students_file_name, "w");
     curr = s_head;
 
     if (fp == NULL)
     {
-        print_debug_message(__FILE__, __FUNCTION__, __LINE__, FILE_NOT_OPEN_MSG);
+        print_debug_message(__FILE__, __FUNCTION__, __LINE__, file_not_open_msg);
 
         return;
     }
@@ -145,24 +150,24 @@ void write_students_in_file()
     }
 
     if (fclose(fp) != 0)
-        print_debug_message(__FILE__, __FUNCTION__, __LINE__, FILE_NOT_CLOSE_MSG);
+        print_debug_message(__FILE__, __FUNCTION__, __LINE__, file_not_close_msg);
 
     fp = NULL;
+
+    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
 
     return;
 }
 
 bool_t check_student_id_syntax_validity(string_t id)
 {
-    int32_t iter = 0;
     int32_t len = 0;
 
     len = strlen(id);
 
     if (len != MAX_STUDENT_ID_LENGTH - 1)
     {
-        check_message = S_INVALID_ID_MSG;
-
+        check_message = s_invalid_id_msg;
         return false;
     }
 
@@ -174,19 +179,19 @@ bool_t check_student_id_syntax_validity(string_t id)
     {
         if (student_id_format[iter] != '*' && id[iter] != student_id_format[iter])
         {
-            check_message = S_INVALID_ID_MSG;
-
+            check_message = s_invalid_id_msg;
             return false;
         }
         else if (student_id_format[iter] == '*' && (id[iter] < '0' || id[iter] > '9'))
         {
-            check_message = S_INVALID_ID_MSG;
-
+            check_message = s_invalid_id_msg;
             return false;
         }
         else
             ;
     }
+
+    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
 
     return true;
 }
@@ -204,39 +209,21 @@ bool_t check_student_id_is_unique(string_t id)
     int_id = get_student_id_in_type_int(id);
     curr = s_head;
 
-    /*
-     *  hash table was created after extracting all the data from the file
-     *  so, during file reading process, the size of the hash table was 0
-     *  so, using hash table here during file reading process will not work
-     *  so, hash table was used here only when the file reading process was finished
-     */
-
-    if (is_data_being_loaded_from_file)
+    while (curr != NULL)
     {
-        while (curr != NULL)
+        other_id = get_student_id_in_type_int(curr->student->id);
+
+        if (int_id == other_id)
         {
-            other_id = get_student_id_in_type_int(curr->student->id);
-
-            if (int_id == other_id)
-            {
-                check_message = S_ID_EXISTS_MSG;
-
-                return false;
-            }
-
-            curr = curr->next;
+            check_message = s_id_exists_msg;
+            return false;
         }
-    }
-    else if (int_id < stud_and_grade_hash_table_size && stud_hash_table[int_id] != NULL)
-    {
-        check_message = S_ID_EXISTS_MSG;
 
-        return false;
+        curr = curr->next;
     }
-    else
-        ;
 
-    check_message = S_ID_NOT_EXISTS_MSG;
+    check_message = s_id_not_exist_msg;
+    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
 
     return true;
 }
@@ -247,15 +234,13 @@ bool_t check_student_id_is_unique(string_t id)
 
 bool_t check_student_name_validity(string_t name)
 {
-    int32_t iter = 0;
     int32_t len = 0;
 
     len = strlen(name);
 
     if (len >= MAX_STUDENT_NAME_LENGTH)
     {
-        check_message = S_INVALID_NAME_LENGTH_MSG;
-
+        check_message = s_invalid_name_length_msg;
         return false;
     }
 
@@ -271,11 +256,13 @@ bool_t check_student_name_validity(string_t name)
             continue;
         else
         {
-            check_message = S_INVALID_NAME_SYNTAX_MSG;
+            check_message = s_invalid_name_syntax_msg;
 
             return false;
         }
     }
+
+    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
 
     return true;
 }
@@ -285,7 +272,6 @@ bool_t insert_new_student_in_the_linked_list(string_t id, string_t name, string_
     student_t *stud = NULL;
     student_node_t *stud_node = NULL;
     student_node_t *s_curr = NULL;
-    student_node_t **new_hash = NULL;
     int32_t int_id = 0;
 
     stud = create_student(id, name, gender, dept_id);
@@ -293,7 +279,7 @@ bool_t insert_new_student_in_the_linked_list(string_t id, string_t name, string_
     if (stud == NULL)
     {
         if (is_null_alloc_returned == true)
-            check_message = NULL_CALLOC_MSG;
+            check_message = null_calloc_msg;
 
         return false;
     }
@@ -303,7 +289,7 @@ bool_t insert_new_student_in_the_linked_list(string_t id, string_t name, string_
     if (stud_node == NULL)
     {
         if (is_null_alloc_returned == true)
-            check_message = NULL_CALLOC_MSG;
+            check_message = null_calloc_msg;
 
         free(stud);
         stud = NULL;
@@ -314,16 +300,6 @@ bool_t insert_new_student_in_the_linked_list(string_t id, string_t name, string_
     s_curr = s_head;
     int_id = get_student_id_in_type_int(id);
     total_students++;
-
-    if (int_id >= stud_and_grade_hash_table_size)
-    {
-        stud_and_grade_hash_table_size *= 2;
-        new_hash = (student_node_t **)realloc(stud_hash_table, stud_and_grade_hash_table_size * sizeof(student_node_t *));
-        stud_hash_table = NULL;
-        stud_hash_table = new_hash;
-    }
-
-    stud_hash_table[int_id] = stud_node;
 
     if (s_head == NULL)
     {
@@ -372,30 +348,53 @@ bool_t insert_new_student_in_the_linked_list(string_t id, string_t name, string_
 
     stud_node->next = s_curr;
 
+    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
+
     return true;
 }
 
 bool_t update_student_name_by_id(string_t id, string_t new_name)
 {
-    int32_t int_id = 0;
+    student_node_t *curr = NULL;
 
-    int_id = get_student_id_in_type_int(id);
+    curr = s_head;
 
     if (!check_student_name_validity(new_name))
         return false;
 
-    memset(stud_hash_table[int_id]->student->name, 0, MAX_STUDENT_NAME_LENGTH);
-    memcpy(stud_hash_table[int_id]->student->name, new_name, strlen(new_name) + 1);
+    while (curr != NULL)
+    {
+        if (!strncmp(curr->student->id, id, MAX_STUDENT_ID_LENGTH - 1))
+            break;
+
+        curr = curr->next;
+    }
+
+    memset(curr->student->name, 0, MAX_STUDENT_NAME_LENGTH);
+    memcpy(curr->student->name, new_name, strlen(new_name) + 1);
+
+    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
 
     return true;
 }
 
 bool_t update_student_gender_by_id(string_t id, int32_t updated_value)
 {
-    int32_t int_id = 0;
+    student_node_t *curr = NULL;
 
-    int_id = get_student_id_in_type_int(id);
-    stud_hash_table[int_id]->student->gender = (updated_value == 1) ? MALE : FEMALE;
+    curr = s_head;
+
+    while (curr != NULL)
+    {
+        if (!strncmp(curr->student->id, id, MAX_STUDENT_ID_LENGTH - 1))
+            break;
+
+        curr = curr->next;
+    }
+
+    curr->student->gender = (updated_value == 1) ? MALE : FEMALE;
+
+    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
 
     return true;
 }
