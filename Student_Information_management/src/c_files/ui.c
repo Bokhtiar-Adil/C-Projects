@@ -37,12 +37,6 @@ void delete_student_process();
 void delete_grade_process();
 
 /*
- *   'iter' will be frequently used to iterate loops in various functions
- */
-static int32_t iter = 0;
-static int32_t input_character_count = 0;
-const char *app_name = "STUDENT INFORMATION MANAGEMENT";
-/*
  *   'menu message' will be frequently used to show info and error messages on console
  */
 const char *menu_message = "";
@@ -66,6 +60,8 @@ void clear_menu()
 
 void print_middle_aligned(const char *text, int32_t given_width)
 {
+    int32_t iter = 0;
+
     for (iter = 0; iter < (given_width - strlen(text)) / 2; iter++)
         printf(" ");
 
@@ -80,13 +76,15 @@ void print_middle_aligned(const char *text, int32_t given_width)
 
 void print_header()
 {
+    int32_t iter = 0;
+    
     clear_menu();
 
     for (iter = 0; iter <= MAX_MENU_WIDTH; iter++)
         printf("*");
 
     printf("\n");
-    print_middle_aligned(app_name, MAX_MENU_WIDTH);
+    print_middle_aligned(APP_NAME, MAX_MENU_WIDTH);
     printf("\n");
 
     for (iter = 0; iter <= MAX_MENU_WIDTH; iter++)
@@ -99,11 +97,13 @@ void print_header()
 
 void load_all_data()
 {
+    is_data_being_loaded_from_file = true;
+    
     load_department_list_from_file();
 
     if (is_database_tampered == true)
     {
-        menu_message = database_tampered_msg;
+        menu_message = DATABASE_TAMPERED_MSG;
         return;
     }
 
@@ -111,14 +111,16 @@ void load_all_data()
 
     if (is_database_tampered == true)
     {
-        menu_message = database_tampered_msg;
+        menu_message = DATABASE_TAMPERED_MSG;
         return;
     }
 
     load_grade_list_from_file();
 
     if (is_database_tampered == true)
-        menu_message = database_tampered_msg;
+        menu_message = DATABASE_TAMPERED_MSG;
+    
+    is_data_being_loaded_from_file = false;
 
     return;
 }
@@ -131,7 +133,7 @@ void load_all_data()
 
 void get_integer_from_user_until_valid_value_is_given(int32_t *value, int32_t min_value, int32_t max_value, const char *message)
 {
-    input_character_count = 0;
+    int32_t input_character_count = 0;
 
     do
     {
@@ -150,6 +152,8 @@ void get_integer_from_user_until_valid_value_is_given(int32_t *value, int32_t mi
 
 void ui_message_and_user_input_area()
 {
+    int32_t iter = 0;
+    
     for (iter = 0; iter <= MAX_MENU_WIDTH; iter++)
         printf("*");
 
@@ -166,7 +170,7 @@ void ui_message_and_user_input_area()
 
 void ui_main_menu()
 {
-    int32_t app_name_length = strlen(app_name);
+    int32_t app_name_length = strlen(APP_NAME);
 
     print_header();
     print_middle_aligned("Main Menu", MAX_MENU_WIDTH);
@@ -249,7 +253,7 @@ void save_process()
     printf("1. Yes\n");
     printf("2. No\n");
     printf(">> ");
-    get_integer_from_user_until_valid_value_is_given(&user_decision, 1, 2, invalid_input_msg);
+    get_integer_from_user_until_valid_value_is_given(&user_decision, 1, 2, INVALID_INPUT_MSG);
 
     if (user_decision == 1)
     {
@@ -269,7 +273,7 @@ void exit_process()
     printf("1. Yes\n");
     printf("2. No\n");
     printf(">> ");
-    get_integer_from_user_until_valid_value_is_given(&user_decision, 1, 2, invalid_input_msg);
+    get_integer_from_user_until_valid_value_is_given(&user_decision, 1, 2, INVALID_INPUT_MSG);
 
     if (user_decision == 1)
     {
@@ -283,9 +287,8 @@ void exit_process()
 void get_student_id_user_input(string_t id_buffer)
 {
     char tmp = 0;
-
-    iter = 0;
-    input_character_count = 0;
+    int32_t iter = 0;
+    int32_t input_character_count = 0;
 
     /*
      *   This loop will keep taking inputs until 'enter' button is pressed
@@ -312,7 +315,7 @@ void get_student_id_user_input(string_t id_buffer)
 
     if (input_character_count >= MAX_STUDENT_ID_LENGTH)
     {
-        menu_message = s_invalid_id_msg;
+        menu_message = S_INVALID_ID_MSG;
 
         return;
     }
@@ -330,6 +333,7 @@ void add_new_department_process()
     char tmp = 0;
     int32_t space_count = 0;
     bool_t is_added = false;
+    int32_t iter = 0;
 
     print_middle_aligned("** Add New Department **", 50);
     printf("\n");
@@ -338,7 +342,6 @@ void add_new_department_process()
     printf("* Allowed characters: A-Z, a-z, underscore, and space\n");
     printf("* Extra space and characters will be discarded\n");
     printf(">> ");
-    iter = 0;
 
     while (tmp != '\n')
     {
@@ -370,7 +373,7 @@ void add_new_department_process()
     is_added = add_new_department_handler(0, buffer);
 
     if (is_added)
-        menu_message = add_success_msg;
+        menu_message = ADD_SUCCESS_MSG;
     else
         menu_message = check_message;
 
@@ -389,6 +392,8 @@ void add_new_student_process()
     int32_t space_count = 0;
     bool_t is_valid = false;
     bool_t is_added = false;
+    int32_t iter = 0;
+    int32_t input_character_count = 0;
 
     print_middle_aligned("** Add New Student **", 50);
     printf("\n");
@@ -407,7 +412,6 @@ void add_new_student_process()
     }
 
     is_valid = false;
-    input_character_count = 0;
     printf("\n");
     printf("Insert the student name:\n");
     printf("* Max length: 20\n");
@@ -448,7 +452,7 @@ void add_new_student_process()
 
     if (input_character_count >= MAX_STUDENT_NAME_LENGTH)
     {
-        menu_message = d_invalid_name_length_msg;
+        menu_message = D_INVALID_NAME_LENGTH_MSG;
 
         return;
     }
@@ -468,7 +472,7 @@ void add_new_student_process()
     printf("1. Male\n");
     printf("2. Female\n");
     printf(">> ");
-    get_integer_from_user_until_valid_value_is_given(&gender, 1, 2, invalid_input_msg);
+    get_integer_from_user_until_valid_value_is_given(&gender, 1, 2, INVALID_INPUT_MSG);
 
     if (gender == 1)
         gender_string = "MALE";
@@ -482,7 +486,7 @@ void add_new_student_process()
     printf("Insert the department id: \n");
     printf("* Must be within %d to %d\n", MIN_DEPARTMENT_ID_VALUE, MAX_DEPARTMENT_ID_VALUE);
     printf(">> ");
-    get_integer_from_user_until_valid_value_is_given(&dept_id, MIN_DEPARTMENT_ID_VALUE, MAX_DEPARTMENT_ID_VALUE, invalid_input_msg);
+    get_integer_from_user_until_valid_value_is_given(&dept_id, MIN_DEPARTMENT_ID_VALUE, MAX_DEPARTMENT_ID_VALUE, INVALID_INPUT_MSG);
     is_valid = check_id((void *)&dept_id, 'd', false) && !check_id((void *)&dept_id, 'd', true);
 
     if (is_valid == false)
@@ -495,7 +499,7 @@ void add_new_student_process()
     is_added = insert_new_student_in_the_linked_list(id_buffer, name_buffer, gender_string, dept_id);
 
     if (is_added)
-        menu_message = add_success_msg;
+        menu_message = ADD_SUCCESS_MSG;
     else
         menu_message = check_message;
 
@@ -513,6 +517,7 @@ void add_new_grade_process()
     char tmp = 0;
     bool_t is_valid = false;
     bool_t is_added = false;
+    int32_t input_character_count = 0;
 
     print_middle_aligned("** Add New Grade **", 50);
     printf("\n");
@@ -521,7 +526,7 @@ void add_new_grade_process()
     printf("* No space is allowed\n");
     printf(">> ");
     get_student_id_user_input(id_buffer);
-    is_valid = check_id((void *)id_buffer, 's', false) && !check_id((void *)id_buffer, 's', true) && !check_id((void *)id_buffer, 'g', 0);
+    is_valid = check_id((void *)id_buffer, 's', false) && !check_id((void *)id_buffer, 's', true) && !check_id((void *)id_buffer, 'g', false);
 
     if (is_valid == false)
     {
@@ -531,23 +536,22 @@ void add_new_grade_process()
     }
 
     is_valid = false;
-    input_character_count = 0;
 
     printf("\n");
     printf("* Marks must be within %d to %d\n", MIN_GRADE_VALUE, MAX_GRADE_VALUE);
     printf("Insert the marks of English >> ");
-    get_integer_from_user_until_valid_value_is_given(&english, MIN_GRADE_VALUE, MAX_GRADE_VALUE, g_english_invalid_marks_msg);
+    get_integer_from_user_until_valid_value_is_given(&english, MIN_GRADE_VALUE, MAX_GRADE_VALUE, G_ENGLISH_INVALID_MARKS_MSG);
 
     printf("Insert the marks of Math >> ");
-    get_integer_from_user_until_valid_value_is_given(&math, MIN_GRADE_VALUE, MAX_GRADE_VALUE, g_math_invalid_marks_msg);
+    get_integer_from_user_until_valid_value_is_given(&math, MIN_GRADE_VALUE, MAX_GRADE_VALUE, G_MATH_INVALID_MARKS_MSG);
 
     printf("Insert the marks of History >> ");
-    get_integer_from_user_until_valid_value_is_given(&history, MIN_GRADE_VALUE, MAX_GRADE_VALUE, g_history_invalid_marks_msg);
+    get_integer_from_user_until_valid_value_is_given(&history, MIN_GRADE_VALUE, MAX_GRADE_VALUE, G_HISTORY_INVALID_MARKS_MSG);
 
     is_added = insert_new_grade_in_the_linked_list(id_buffer, english, math, history);
 
     if (is_added)
-        menu_message = add_success_msg;
+        menu_message = ADD_SUCCESS_MSG;
     else
         menu_message = check_message;
 
@@ -563,11 +567,12 @@ void update_department_process()
     char tmp = 0;
     int32_t space_count = 0;
     bool_t is_updated = false;
+    int32_t iter = 0;
 
     print_middle_aligned("** Update Department **", 50);
     printf("\n");
     printf("Insert department id >> ");
-    get_integer_from_user_until_valid_value_is_given(&id, MIN_DEPARTMENT_ID_VALUE, MAX_DEPARTMENT_ID_VALUE, invalid_input_msg);
+    get_integer_from_user_until_valid_value_is_given(&id, MIN_DEPARTMENT_ID_VALUE, MAX_DEPARTMENT_ID_VALUE, INVALID_INPUT_MSG);
 
     if (!check_id((void *)&id, 'd', false) || check_id((void *)&id, 'd', true))
     {
@@ -577,7 +582,6 @@ void update_department_process()
     }
 
     printf("Insert new name >> ");
-    iter = 0;
 
     while (tmp != '\n')
     {
@@ -609,7 +613,7 @@ void update_department_process()
     is_updated = update_department_name(id, buffer);
 
     if (is_updated == true)
-        menu_message = update_success_msg;
+        menu_message = UPDATE_SUCCESS_MSG;
     else
         menu_message = check_message;
 
@@ -630,6 +634,8 @@ void update_student_process(int32_t what_to_update)
     char tmp = 0;
     int32_t space_count = 0;
     bool_t is_invalid = false, is_updated = false;
+    int32_t iter = 0;
+    int32_t input_character_count = 0;
 
     print_middle_aligned("** Update Student **", 50);
     printf("\n");
@@ -673,7 +679,7 @@ void update_student_process(int32_t what_to_update)
 
         if (input_character_count >= MAX_STUDENT_NAME_LENGTH)
         {
-            menu_message = d_invalid_name_length_msg;
+            menu_message = D_INVALID_NAME_LENGTH_MSG;
 
             return;
         }
@@ -687,20 +693,20 @@ void update_student_process(int32_t what_to_update)
         printf("1. Male\n");
         printf("2. Female\n");
         printf(">> ");
-        get_integer_from_user_until_valid_value_is_given(&gender, 1, 2, invalid_input_msg);
+        get_integer_from_user_until_valid_value_is_given(&gender, 1, 2, INVALID_INPUT_MSG);
         is_updated = update_student_gender_by_id(id_buffer, gender);
     }
     else if (what_to_update == 3)
     {
         printf("Insert new department id >> ");
-        get_integer_from_user_until_valid_value_is_given(&dept_id, MIN_DEPARTMENT_ID_VALUE, MAX_DEPARTMENT_ID_VALUE, invalid_input_msg);
+        get_integer_from_user_until_valid_value_is_given(&dept_id, MIN_DEPARTMENT_ID_VALUE, MAX_DEPARTMENT_ID_VALUE, INVALID_INPUT_MSG);
         is_updated = update_student_department_by_id(id_buffer, dept_id);
     }
     else
         ;
 
     if (is_updated == true)
-        menu_message = update_success_msg;
+        menu_message = UPDATE_SUCCESS_MSG;
     else
         menu_message = check_message;
 
@@ -730,17 +736,17 @@ void update_grade_process(int what_to_update)
     if (what_to_update == 1)
     {
         printf("Insert new English grade >> ");
-        get_integer_from_user_until_valid_value_is_given(&new_mark, MIN_GRADE_VALUE, MAX_GRADE_VALUE, g_english_invalid_marks_msg);
+        get_integer_from_user_until_valid_value_is_given(&new_mark, MIN_GRADE_VALUE, MAX_GRADE_VALUE, G_ENGLISH_INVALID_MARKS_MSG);
     }
     else if (what_to_update == 2)
     {
         printf("Insert new Math grade >> ");
-        get_integer_from_user_until_valid_value_is_given(&new_mark, MIN_GRADE_VALUE, MAX_GRADE_VALUE, g_math_invalid_marks_msg);
+        get_integer_from_user_until_valid_value_is_given(&new_mark, MIN_GRADE_VALUE, MAX_GRADE_VALUE, G_MATH_INVALID_MARKS_MSG);
     }
     else if (what_to_update == 3)
     {
         printf("Insert new History grade >> ");
-        get_integer_from_user_until_valid_value_is_given(&new_mark, MIN_GRADE_VALUE, MAX_GRADE_VALUE, g_history_invalid_marks_msg);
+        get_integer_from_user_until_valid_value_is_given(&new_mark, MIN_GRADE_VALUE, MAX_GRADE_VALUE, G_HISTORY_INVALID_MARKS_MSG);
     }
     else
         ;
@@ -748,7 +754,7 @@ void update_grade_process(int what_to_update)
     is_updated = update_grade_handler(id_buffer, what_to_update, new_mark);
 
     if (is_updated == true)
-        menu_message = update_success_msg;
+        menu_message = UPDATE_SUCCESS_MSG;
     else
         menu_message = check_message;
 }
@@ -834,6 +840,7 @@ void display_students()
     grade_node_t *g_curr = NULL;
     string_t *dept_names = NULL;
     string_t int_to_str = NULL;
+    int32_t iter = 0;
 
     s_curr = s_head;
     d_curr = d_head;
@@ -948,6 +955,7 @@ void display_grades()
     student_node_t *s_curr = s_head;
     string_t *stud_names = NULL;
     string_t int_to_str = NULL;
+    int32_t iter = 0;
 
     stud_names = (string_t *)calloc(999, MAX_STUDENT_NAME_LENGTH);
 
@@ -985,7 +993,7 @@ void display_grades()
     {
         stud_names[get_student_id_in_type_int(s_curr->student->id) - 1] = s_curr->student->name;
         s_curr = s_curr->next;
-    }
+    }    
 
     while (g_curr != NULL)
     {
@@ -1038,7 +1046,7 @@ void display_table(fptr_table_displayer displayer)
 
 void delete_department_process()
 {
-    int32_t id = 0, iter = 0;
+    int32_t id = 0;
     bool_t success = false, is_invalid = false;
     char input = 0;
     char buffer[MAX_DEPARTMENT_ID_CHARACTER_LENGTH + 1] = {0};
@@ -1046,7 +1054,7 @@ void delete_department_process()
     print_middle_aligned("** Delete Department **", 50);
     printf("\n");
     printf("Insert department id >> ");
-    get_integer_from_user_until_valid_value_is_given(&id, MIN_DEPARTMENT_ID_VALUE, MAX_DEPARTMENT_ID_VALUE, invalid_input_msg);
+    get_integer_from_user_until_valid_value_is_given(&id, MIN_DEPARTMENT_ID_VALUE, MAX_DEPARTMENT_ID_VALUE, INVALID_INPUT_MSG);
 
     if (!check_id((void *)&id, 'd', false) || check_id((void *)&id, 'd', true))
     {
@@ -1058,7 +1066,7 @@ void delete_department_process()
     success = delete_department_from_the_list(id);
 
     if (success)
-        menu_message = delete_success_msg;
+        menu_message = DELETE_SUCCESS_MSG;
     else
         menu_message = check_message;
 
@@ -1087,7 +1095,7 @@ void delete_student_process()
     is_deleted = delete_student_from_the_list(id_buffer);
 
     if (is_deleted)
-        menu_message = delete_success_msg;
+        menu_message = DELETE_SUCCESS_MSG;
     else
         menu_message = check_message;
 
@@ -1116,7 +1124,7 @@ void delete_grade_process()
     is_deleted = delete_grade_from_the_list(id_buffer);
 
     if (is_deleted)
-        menu_message = delete_success_msg;
+        menu_message = DELETE_SUCCESS_MSG;
     else
         menu_message = check_message;
 

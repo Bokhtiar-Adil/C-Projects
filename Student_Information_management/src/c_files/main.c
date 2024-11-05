@@ -30,7 +30,7 @@ int main(void)
 
         if (selected_menu_item == -1)
         {
-            menu_message = invalid_input_msg;
+            menu_message = INVALID_INPUT_MSG;
             continue;
         }
 
@@ -44,7 +44,7 @@ int main(void)
                     break;
 
                 default:
-                    menu_message = invalid_input_msg;
+                    menu_message = INVALID_INPUT_MSG;
                     break;
             }
         }
@@ -76,7 +76,7 @@ int main(void)
                     exit_process();
                     break;
                 default:
-                    menu_message = invalid_input_msg;
+                    menu_message = INVALID_INPUT_MSG;
                     break;
             }
         }
@@ -114,7 +114,7 @@ int main(void)
                     exit_process();
                     break;
                 default:
-                    menu_message = invalid_input_msg;
+                    menu_message = INVALID_INPUT_MSG;
                     break;
             }
         }
@@ -162,7 +162,7 @@ int main(void)
                     exit_process();
                     break;
                 default:
-                    menu_message = invalid_input_msg;
+                    menu_message = INVALID_INPUT_MSG;
                     break;
             }
         }
@@ -210,7 +210,7 @@ int main(void)
                     exit_process();
                     break;
                 default:
-                    menu_message = invalid_input_msg;
+                    menu_message = INVALID_INPUT_MSG;
                     break;
             }
         }

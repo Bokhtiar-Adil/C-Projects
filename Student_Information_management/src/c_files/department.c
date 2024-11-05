@@ -21,10 +21,8 @@ department_node_t *d_head = NULL;
 department_node_t *d_tail = NULL;
 /* store the maximum department id to use for auto-increment */
 int32_t maximum_dept_id;
-/*
- *   This variable will be frequently used to iterate loops in various functions
- */
-static int32_t iter = 0;
+department_node_t **dept_hash_table = NULL;
+uint32_t dept_hash_table_size = 0;
 
 department_t *create_department(int32_t id, string_t name, bool_t is_from_file)
 {
@@ -62,8 +60,6 @@ department_t *create_department(int32_t id, string_t name, bool_t is_from_file)
     memcpy(new_dept->name, name, strlen(name) + 1);
     is_null_alloc_returned = false;
 
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
-
     return new_dept;
 }
 
@@ -84,8 +80,6 @@ department_node_t *create_department_node(department_t *department)
     new->prev = NULL;
     new->next = NULL;
 
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
-
     return new;
 }
 
@@ -93,7 +87,7 @@ void insert_department_at_the_end(department_node_t *department)
 {
     if (department == NULL)
     {
-        print_debug_message(__FILE__, __FUNCTION__, __LINE__, null_node_msg);
+        print_debug_message(__FILE__, __FUNCTION__, __LINE__, NULL_NODE_MSG);
 
         return;
     }
@@ -112,8 +106,6 @@ void insert_department_at_the_end(department_node_t *department)
     }
     department->next = NULL;
 
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
-
     return;
 }
 
@@ -123,11 +115,11 @@ void write_departments_in_file()
     FILE *fp = NULL;
 
     curr = d_head;
-    fp = fopen(departments_file_name, "w");
+    fp = fopen(DEPARTMENTS_FILE_NAME, "w");
 
     if (fp == NULL)
     {
-        print_debug_message(__FILE__, __FUNCTION__, __LINE__, file_not_open_msg);
+        print_debug_message(__FILE__, __FUNCTION__, __LINE__, FILE_NOT_OPEN_MSG);
 
         return;
     }
@@ -139,25 +131,21 @@ void write_departments_in_file()
     }
 
     if (fclose(fp) != 0)
-        print_debug_message(__FILE__, __FUNCTION__, __LINE__, file_not_close_msg);
+        print_debug_message(__FILE__, __FUNCTION__, __LINE__, FILE_NOT_CLOSE_MSG);
 
     fp = NULL;
-
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
 
     return;
 }
 
-bool_t check_department_id_value_validity(int32_t id)
+inline bool_t check_department_id_value_validity(int32_t id)
 {
     if (id < MIN_DEPARTMENT_ID_VALUE || id > MAX_DEPARTMENT_ID_VALUE)
     {
-        check_message = d_invalid_id_msg;
+        check_message = D_INVALID_ID_MSG;
 
         return false;
     }
-
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
 
     return true;
 }
@@ -172,19 +160,37 @@ bool_t check_department_id_is_unique(int32_t id)
 
     d_curr = d_head;
 
-    while (d_curr != NULL)
+    /*
+     *  hash table was created after extracting all the data from the file
+     *  so, during file reading process, the size of the hash table was 0
+     *  so, using hash table here during file reading process will not work
+     *  so, hash table was used here only when the file reading process was finished
+     */
+
+    if (is_data_being_loaded_from_file)
     {
-        if (d_curr->department->id == id)
+        while (d_curr != NULL)
         {
-            check_message = d_id_exists_msg;
-            return false;
+            if (d_curr->department->id == id)
+            {
+                check_message = D_ID_EXISTS_MSG;
+
+                return false;
+            }
+
+            d_curr = d_curr->next;
         }
-
-        d_curr = d_curr->next;
     }
+    else if (id < dept_hash_table_size && dept_hash_table[id] != NULL)
+    {
+        check_message = D_ID_EXISTS_MSG;
 
-    check_message = d_id_not_exist_msg;
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
+        return false;
+    }
+    else
+        ;
+
+    check_message = D_ID_NOT_EXISTS_MSG;
 
     return true;
 }
@@ -195,6 +201,7 @@ bool_t check_department_id_is_unique(int32_t id)
 
 bool_t check_department_name_validity(string_t name)
 {
+    int32_t iter = 0;
     int32_t len = 0;
     char tmp = 0;
 
@@ -202,7 +209,7 @@ bool_t check_department_name_validity(string_t name)
 
     if (len >= MAX_DEPARTMENT_NAME_LENGTH)
     {
-        check_message = d_invalid_name_length_msg;
+        check_message = D_INVALID_NAME_LENGTH_MSG;
         return false;
     }
 
@@ -211,12 +218,11 @@ bool_t check_department_name_validity(string_t name)
         tmp = name[iter];
         if (!((tmp >= 'a' && tmp <= 'z') || (tmp >= 'A' && tmp <= 'Z') || (tmp == '_') || (tmp == ' ')))
         {
-            check_message = d_invalid_name_syntax_msg;
+            check_message = D_INVALID_NAME_SYNTAX_MSG;
+
             return false;
         }
     }
-
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
 
     return true;
 }
@@ -235,15 +241,14 @@ bool_t check_department_name_is_unique(string_t name)
     {
         if (!strncmp(curr->department->name, name, MAX_DEPARTMENT_NAME_LENGTH))
         {
-            check_message = d_id_exists_msg;
+            check_message = D_ID_EXISTS_MSG;
             return false;
         }
 
         curr = curr->next;
     }
 
-    check_message = d_id_not_exist_msg;
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
+    check_message = D_ID_NOT_EXISTS_MSG;
 
     return true;
 }
@@ -252,13 +257,14 @@ bool_t insert_new_department_in_the_linked_list(int32_t id, string_t name)
 {
     department_t *dept = NULL;
     department_node_t *dept_node = NULL;
+    department_node_t **new_hash = NULL;
 
     dept = create_department(id, name, false);
 
     if (dept == NULL)
     {
         if (is_null_alloc_returned == true)
-            check_message = null_calloc_msg;
+            check_message = NULL_CALLOC_MSG;
 
         return false;
     }
@@ -268,7 +274,7 @@ bool_t insert_new_department_in_the_linked_list(int32_t id, string_t name)
     if (dept_node == NULL)
     {
         if (is_null_alloc_returned == true)
-            check_message = null_calloc_msg;
+            check_message = NULL_CALLOC_MSG;
 
         free(dept);
         dept = NULL;
@@ -278,7 +284,16 @@ bool_t insert_new_department_in_the_linked_list(int32_t id, string_t name)
 
     insert_department_at_the_end(dept_node);
     maximum_dept_id = dept_node->department->id;
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
+
+    if (maximum_dept_id >= dept_hash_table_size)
+    {
+        dept_hash_table_size *= 2;
+        new_hash = (department_node_t **)realloc(dept_hash_table, dept_hash_table_size * sizeof(department_node_t *));
+        dept_hash_table = NULL;
+        dept_hash_table = new_hash;
+    }
+
+    dept_hash_table[dept_node->department->id] = dept_node;
 
     return true;
 }
@@ -297,32 +312,16 @@ bool_t add_new_department_handler(int32_t id, string_t name)
     else
         return insert_new_department_in_the_linked_list(id, name);
 
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
-
     return true;
 }
 
 bool_t update_department_name(int32_t id, string_t new_name)
 {
-    department_node_t *curr = NULL;
-
-    curr = d_head;
-
     if (!check_department_name_validity(new_name) || !check_department_name_is_unique(new_name))
         return false;
 
-    while (curr != NULL)
-    {
-        if (curr->department->id == id)
-            break;
-
-        curr = curr->next;
-    }
-
-    memset(curr->department->name, 0, MAX_DEPARTMENT_NAME_LENGTH);
-    memcpy(curr->department->name, new_name, strlen(new_name) + 1);
-
-    print_debug_message(__FILE__, __FUNCTION__, __LINE__, "end");
+    memset(dept_hash_table[id]->department->name, 0, MAX_DEPARTMENT_NAME_LENGTH);
+    memcpy(dept_hash_table[id]->department->name, new_name, strlen(new_name));
 
     return true;
 }
